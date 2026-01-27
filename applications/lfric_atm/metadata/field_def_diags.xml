@@ -852,7 +852,9 @@
   <!-- Stochastic Physics diagnostics -->
   <field id="stochastic__dtheta_spt" name="dtheta_spt" long_name="potential_temperature_increment_from_spt" unit="K" grid_ref="full_level_face_grid" />
   <field id="stochastic__dmv_spt" name="dmv_spt" long_name="vapour_increment_from_spt" unit="kg/kg" grid_ref="full_level_face_grid" />
-  <field id="stochastic__fp_spt" name="fp_spt" long_name="spt_forcing_pattern" unit="1" grid_ref="full_level_face_grid" />
+  <field id="stochastic__noise_papillon" name="noise_papillon" long_name="papillon_noise_field" unit="1" grid_ref="full_level_face_grid" />
+  <field id="stochastic__dtheta_papillon" name="dtheta_papillon" long_name="potential_temperature_increment_from_papillon" unit="K" grid_ref="full_level_face_grid" />
+  <field id="stochastic__dt_papillon" name="dt_papillon" long_name="temperature_increment_from_papillon" unit="K" grid_ref="full_level_face_grid"> (theta + stochastic__dtheta_papillon) * exner_in_wth - (theta * exner_in_wth) </field> <field id="stochastic__fp_spt" name="fp_spt" long_name="spt_forcing_pattern" unit="1" grid_ref="full_level_face_grid" />
   <field id="stochastic__fp_skeb" name="fp_skeb" long_name="skeb_forcing_pattern" unit="1" grid_ref="half_level_face_grid" />
   <field id="stochastic__ndisp" name="ndisp" long_name="skeb_numerical_dissipation" unit="m2 s-3" grid_ref="half_level_face_grid" />
   <field id="stochastic__norm_xi" name="norm_xi" long_name="skeb_norm_gradient_of_vorticity" unit="m2 s-2" grid_ref="half_level_face_grid" />

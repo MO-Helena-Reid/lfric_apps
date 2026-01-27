@@ -1,0 +1,66 @@
+!-------------------------------------------------------------------------------
+!(c) Crown copyright 2020 Met Office. All rights reserved.
+!The file LICENCE, distributed with this code, contains details of the terms
+!under which the code may be used.
+!-------------------------------------------------------------------------------
+!>@brief Prepares the papillon fields
+module init_papillon_fields_alg_mod
+
+  use constants_mod,                   only: r_def
+
+  ! Derived Types
+  use field_mod,                       only: field_type
+  use field_collection_mod,            only: field_collection_type
+  use mesh_mod,                        only: mesh_type
+
+  implicit none
+
+  private
+  public :: init_papillon_fields_alg
+
+contains
+
+  !> @brief   Initialises the papillon fields (currently just stored in the stochastic physics field
+  !>          collection because papillon will probably be merged with this in the future)
+  !> @param[in,out] stph_fields   stochastic physics related fields
+  subroutine init_papillon_fields_alg(stph_fields)
+
+    use section_choice_config_mod, only: papillon, papillon_on, papillon_non_interactive
+    use log_mod, only: log_event, log_scratch_space, LOG_LEVEL_ERROR, LOG_LEVEL_INFO
+    use ml_constants_mod, only: ml_nlev
+    implicit none
+    type( mesh_type ), pointer  :: mesh => null()
+
+    ! Arguments
+    type( field_collection_type ), intent( in ) :: stph_fields
+
+    ! Increment fields
+    type( field_type ), pointer :: dtheta_papillon => null()
+
+    ! Other fields
+    type( field_type ), pointer :: noise  => null()
+
+    integer :: nlayers
+
+    if ( papillon == papillon_on ) then
+      call stph_fields%get_field('dtheta_papillon', dtheta_papillon)
+
+      call invoke( setval_c(dtheta_papillon, 0.0_r_def) )
+      call log_event('Initialised PAPILLON fields', LOG_LEVEL_INFO)
+      mesh => dtheta_papillon%get_mesh()
+      nlayers = mesh%get_nlayers()
+      if ( nlayers /= ml_nlev ) then
+       write(log_scratch_space, '(A,I5,A,I5)') &
+        'PAPILLON: received vertical nlayers: ',&
+        nlayers, &
+        ' but papillon requires nlayers: ', ml_nlev
+        call log_event(log_scratch_space, LOG_LEVEL_ERROR)
+      end if
+    elseif ( papillon == papillon_non_interactive ) then
+      call log_event('Papillon non-interactive mode is not yet implemented.', LOG_LEVEL_ERROR)
+    end if
+
+    call stph_fields%get_field('noise', noise)
+    call invoke( setval_c(noise, 0.0_r_def) )
+  end subroutine init_papillon_fields_alg
+end module init_papillon_fields_alg_mod

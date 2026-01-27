@@ -52,7 +52,7 @@ def clone_dependency(values: Dict, temp_dep: Path) -> None:
         f"git -C {temp_dep} init",
         f"git -C {temp_dep} remote add origin {source}",
         f"git -C {temp_dep} fetch origin {ref}",
-        f"git -C {temp_dep} checkout FETCH_HEAD"
+        f"git -C {temp_dep} checkout FETCH_HEAD",
     )
     for command in commands:
         run_command(command)
@@ -79,7 +79,7 @@ def extract_files(dependency: str, values: Dict, files: List[str], working: Path
     working_dep = working / dependency
 
     # make the working directory location
-    working_dep.mkdir(parents=True)
+    working_dep.mkdir(parents=True, exist_ok=True)
 
     for extract_file in files:
         source_file = temp_dep / extract_file

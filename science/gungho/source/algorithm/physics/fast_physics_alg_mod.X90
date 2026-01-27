@@ -12,7 +12,8 @@ module fast_physics_alg_mod
                                        cloud, cloud_um,                   &
                                        cloud_evap_condense,               &
                                        stochastic_physics,                &
-                                       stochastic_physics_um
+                                       stochastic_physics_um,             &
+                                       papillon, papillon_on
 
   use driver_water_constants_mod, &
                                  only: heat_capacity_h2o_vapour, &
@@ -81,6 +82,8 @@ module fast_physics_alg_mod
   ! Stochastic physics
   use stph_main_alg_mod, only: stph_main_alg
   use blpert_main_alg_mod, only: blpert_main_alg
+  ! PAPILLON stochastic physics
+  use papillon_alg_mod, only: papillon_alg
 #endif
 
   implicit none
@@ -188,6 +191,7 @@ contains
 
     type( field_type ), pointer :: departure_exner_wth
 #endif
+    type( field_type ), pointer :: dtheta_papillon => null()
     type( field_type), pointer :: theta_star => null()
     type( field_type), pointer :: u_star => null()
     type( field_type), pointer :: exner_in_wth => null()
@@ -241,7 +245,16 @@ contains
       call derived_fields%get_field('exner_in_wth', exner_in_wth)
       call invoke( setval_X(departure_exner_wth,exner_in_wth) )
     end if
-
+    !--------------------------------------------------------------------
+    ! PAPILLON stochastic physics scheme
+    !--------------------------------------------------------------------
+    call derived_fields%get_field('theta_star', theta_star)
+    if (papillon == papillon_on) then
+        call papillon_alg(mr, derived_fields, orography_fields, surface_fields, &
+                          stph_fields, outer)
+        call stph_fields%get_field('dtheta_papillon', dtheta_papillon)
+        call invoke( inc_X_plus_Y(theta_star, dtheta_papillon))
+    end if
     !--------------------------------------------------------------------
     ! UM convection scheme
     !--------------------------------------------------------------------
@@ -381,7 +394,10 @@ contains
                   inc_X_plus_Y(mr(imr_v), dmv_stph), &
                   inc_X_plus_Y(du, du_stph) )
     end if
-
+    if (papillon == papillon_on) then
+        ! Remove PAPILLON increment again, it was only added temporarily
+        call invoke(inc_X_minus_Y(theta_star, dtheta_papillon))
+    end if
     if (blpert_done) then
       call invoke(inc_X_plus_Y(dtheta, dtheta_blpert), &
                   inc_X_plus_Y(mr(imr_v), dmv_blpert) )
